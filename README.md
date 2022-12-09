@@ -36,26 +36,34 @@ This is the final project from the [Data Engineer Nanodegree Program at Udacity]
 
 ### Premise
 
-> ...
+Immigration affects the receiving country in many fronts, from the labor market to cultural changes. It is essential for policy makers to understand immigration trends to better address the needs of the ever-changing population, as well as to foster international cooperation with the countries immigrants come from.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Goal
 
-...
+The goal of this project is to extract insights from U.S. immigration data. Additional information can be drawn by correlating immigration data with U.S. cities demographics, airports and even average temperature.
 
+In order to achieve this goal, I will be using AWS services such as S3 buckets and Amazon Redshift. The ETL pipeline will be executed through an Apache Airflow DAG.
+
+Raw data will first be uploaded to S3 buckets. Then, an Apache Airflow DAG will clean and process the data before creating and populating the relevant fact and dimension tables, following a predefined STAR schema. Finally, these end tables will be queried to obtain the desired insights.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Data
 
-...
+The project uses the following data sets:
+
+- **I94 Immigration Data**: This data comes from the US National Tourism and Trade Office and covers the year 2016. A data dictionary is available in `data/i94_inmigration_data_2016/schema.json`. This data set contains many records, a smaller data sample is available in `data/i94_inmigration_data_2016/data_sample.csv.bz2`.
+- **World Temperature Data**: Global land and ocean-and-land temperatures ([source](https://www.kaggle.com/datasets/berkeleyearth/climate-change-earth-surface-temperature-data)).
+- **U.S. City Demographic Data**: This dataset contains information about the demographics of all US cities and census-designated places with a population greater or equal to 65,000 ([source](https://public.opendatasoft.com/explore/dataset/us-cities-demographics/information/)).
+- **Airport Code Table**: This is a simple table of airport codes and corresponding cities ([source](https://datahub.io/core/airport-codes#data)).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Data Schema
 
-...
+To be defined...
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
