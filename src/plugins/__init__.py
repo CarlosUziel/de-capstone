@@ -5,9 +5,10 @@ from airflow.plugins_manager import AirflowPlugin
 
 
 # Defining the plugin class
-class SparkifyPlugin(AirflowPlugin):
-    name = "sparkify_plugin"
+class CapstonePlugin(AirflowPlugin):
+    name = "capstone_plugin"
     operators = [
+        operators.DataCleaningOperator,
         operators.DataQualityOperator,
         operators.LoadDimensionOperator,
         operators.LoadFactOperator,
