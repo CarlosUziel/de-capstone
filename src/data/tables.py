@@ -117,7 +117,7 @@ ON_LOAD_TABLES_FILES: Dict[str, Union[str, Iterable[str]]] = {
 }
 
 # Dictionary of tables cleaning args
-ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[Any]] = {
+ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[str, Any]] = {
     "i94_immigration": {
         "data_paths": ON_LOAD_TABLES_FILES["i94_immigration"],
         "data_schema": ON_LOAD_TABLES_SCHEMA["i94_immigration"],
@@ -152,13 +152,7 @@ ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[Any]] = {
         "data_paths": ON_LOAD_TABLES_FILES["airport_codes"],
         "data_schema": ON_LOAD_TABLES_SCHEMA["airport_codes"],
         "table_name": "airport_codes",
-        "drop_na_cols": [
-            "ident",
-            "name",
-            "iso_country",
-            "iso_region",
-            "municipality"
-        ],
+        "drop_na_cols": ["ident", "name", "iso_country", "iso_region", "municipality"],
         "drop_duplicates_cols": ["ident"],
         "parquet_partition_cols": ["iso_country", "iso_region"],
     },
