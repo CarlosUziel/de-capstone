@@ -130,7 +130,7 @@ Introduce your desired password when prompted and then access the UI at `localho
 
 **Create cluster:**
 
-  1. Fill the `dwh.cfg` configuration file. These are the basic parameters that will be used to operate on AWS. More concretely, `GENERAL` covers general parameters, `DWH` includes the necessary information to create and connect to the Redshift cluster and S3 contains information on where to find the source dataset for this project. *This file is already filled with example values*.
+  1. Fill the `dl.cfg` configuration file. These are the basic parameters that will be used to operate on AWS. More concretely, `GENERAL` covers general parameters, `DWH` includes the necessary information to create and connect to the Redshift cluster and S3 contains information on where to find the source dataset for this project. *This file is already filled with example values*.
   2. To create the Redshift cluster, simply run the `setup.py` python script (must be done after `initialize_airflow.sh`, since registration of connections is also taking place in `setup.py`).
 
 <span style="color:red;font-weight:bold">*DO NOT FORGET TO TERMINATE YOUR REDSHIFT CLUSTER WHEN FINISHED WORKING ON THE PROJECT TO AVOID UNWANTED COSTS!*</span>
