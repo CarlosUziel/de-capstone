@@ -8,18 +8,18 @@ import boto3
 from botocore.client import ClientError
 
 
-def create_attach_role(iam_client: Any, dwh_config: ConfigParser) -> str:
+def create_attach_role(iam_client: Any, dl_config: ConfigParser) -> str:
     """Create an IAM Role that makes Redshift able to access S3 bucket (ReadOnly)
 
     Args:
         iam_client: client to access AWS IAM service.
-        dwh_config: a ConfigParser containing necessary parameters.
+        dl_config: a ConfigParser containing necessary parameters.
     """
     # 1. Create the role
     try:
         iam_client.create_role(
             Path="/",
-            RoleName=dwh_config.get("DWH", "DWH_IAM_ROLE_NAME"),
+            RoleName=dl_config.get("DWH", "DWH_IAM_ROLE_NAME"),
             Description="Allows Redshift clusters to call AWS services on your behalf.",
             AssumeRolePolicyDocument=json.dumps(
                 {
@@ -40,40 +40,40 @@ def create_attach_role(iam_client: Any, dwh_config: ConfigParser) -> str:
     # 2. Attach role
     try:
         iam_client.attach_role_policy(
-            RoleName=dwh_config.get("DWH", "DWH_IAM_ROLE_NAME"),
+            RoleName=dl_config.get("DWH", "DWH_IAM_ROLE_NAME"),
             PolicyArn="arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess",
         )["ResponseMetadata"]["HTTPStatusCode"]
     except Exception as e:
         logging.error(e)
 
     # 3. Return IAM role ARN
-    return iam_client.get_role(RoleName=dwh_config.get("DWH", "DWH_IAM_ROLE_NAME"))[
+    return iam_client.get_role(RoleName=dl_config.get("DWH", "DWH_IAM_ROLE_NAME"))[
         "Role"
     ]["Arn"]
 
 
 def create_redshift_cluster(
-    redshift_client: Any, dwh_config: ConfigParser, iamArn: str
+    redshift_client: Any, dl_config: ConfigParser, iamArn: str
 ) -> Dict:
     """Create a Redshift cluster with given parameters and appropiate role.
 
     Args:
         iam_client: client to access AWS Redshift service.
-        dwh_config: a ConfigParser containing necessary parameters.
+        dl_config: a ConfigParser containing necessary parameters.
         iamArn: IAM role.
     """
     # 1. Create cluster
     try:
         redshift_client.create_cluster(
             # HW
-            ClusterType=dwh_config.get("DWH", "DWH_CLUSTER_TYPE"),
-            NodeType=dwh_config.get("DWH", "DWH_NODE_TYPE"),
-            NumberOfNodes=int(dwh_config.get("DWH", "DWH_NUM_NODES")),
+            ClusterType=dl_config.get("DWH", "DWH_CLUSTER_TYPE"),
+            NodeType=dl_config.get("DWH", "DWH_NODE_TYPE"),
+            NumberOfNodes=int(dl_config.get("DWH", "DWH_NUM_NODES")),
             # Identifiers & Credentials
-            DBName=dwh_config.get("DWH", "DWH_DB"),
-            ClusterIdentifier=dwh_config.get("DWH", "DWH_CLUSTER_IDENTIFIER"),
-            MasterUsername=dwh_config.get("DWH", "DWH_DB_USER"),
-            MasterUserPassword=dwh_config.get("DWH", "DWH_DB_PASSWORD"),
+            DBName=dl_config.get("DWH", "DWH_DB"),
+            ClusterIdentifier=dl_config.get("DWH", "DWH_CLUSTER_IDENTIFIER"),
+            MasterUsername=dl_config.get("DWH", "DWH_DB_USER"),
+            MasterUserPassword=dl_config.get("DWH", "DWH_DB_PASSWORD"),
             # Roles (for s3 access)
             IamRoles=[iamArn],
         )
@@ -85,7 +85,7 @@ def create_redshift_cluster(
     logging.info("Waiting for Redshift cluster to become available...")
     while True:
         cluster_props = redshift_client.describe_clusters(
-            ClusterIdentifier=dwh_config.get("DWH", "DWH_CLUSTER_IDENTIFIER")
+            ClusterIdentifier=dl_config.get("DWH", "DWH_CLUSTER_IDENTIFIER")
         )["Clusters"][0]
 
         if cluster_props["ClusterStatus"] == "available":
@@ -97,7 +97,7 @@ def create_redshift_cluster(
     return cluster_props, redshift_client
 
 
-def open_db_port(user_config: ConfigParser, dwh_config: ConfigParser):
+def open_db_port(user_config: ConfigParser, dl_config: ConfigParser):
     """Open an incoming TCP port to access the cluster endpoint"""
 
     # 1. Get EC2 client
@@ -105,50 +105,50 @@ def open_db_port(user_config: ConfigParser, dwh_config: ConfigParser):
         "ec2",
         aws_access_key_id=user_config.get("AWS", "AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=user_config.get("AWS", "AWS_SECRET_ACCESS_KEY"),
-        region_name=dwh_config.get("GENERAL", "REGION"),
+        region_name=dl_config.get("GENERAL", "REGION"),
     )
 
     # 2. Open DB port
     try:
-        vpc = ec2.Vpc(id=dwh_config.get("DWH", "DWH_VPC_ID"))
+        vpc = ec2.Vpc(id=dl_config.get("DWH", "DWH_VPC_ID"))
         defaultSg = list(vpc.security_groups.all())[0]
         print(defaultSg)
         defaultSg.authorize_ingress(
             GroupName=defaultSg.group_name,
             CidrIp="0.0.0.0/0",
             IpProtocol="TCP",
-            FromPort=int(dwh_config.get("DWH", "DWH_DB_PORT")),
-            ToPort=int(dwh_config.get("DWH", "DWH_DB_PORT")),
+            FromPort=int(dl_config.get("DWH", "DWH_DB_PORT")),
+            ToPort=int(dl_config.get("DWH", "DWH_DB_PORT")),
         )
     except Exception as e:
         print(e)
 
 
-def delete_cluster(redshift_client: Any, dwh_config: ConfigParser):
+def delete_cluster(redshift_client: Any, dl_config: ConfigParser):
     """Delete an Amazon Redshift cluster
 
     Args:
         redshift_client: A boto3 Redshift client
-        dwh_config: DB configuration parameters.
+        dl_config: DB configuration parameters.
     """
     redshift_client.delete_cluster(
-        ClusterIdentifier=dwh_config.get("DWH", "DWH_CLUSTER_IDENTIFIER"),
+        ClusterIdentifier=dl_config.get("DWH", "DWH_CLUSTER_IDENTIFIER"),
         SkipFinalClusterSnapshot=True,
     )
 
 
-def delete_iam_roles(iam_client: Any, dwh_config: ConfigParser):
+def delete_iam_roles(iam_client: Any, dl_config: ConfigParser):
     """Delete IAM roles
 
     Args:
         iam_client: A boto3 IAM client
-        dwh_config: DB configuration parameters.
+        dl_config: DB configuration parameters.
     """
     iam_client.detach_role_policy(
-        RoleName=dwh_config.get("DWH", "DWH_IAM_ROLE_NAME"),
+        RoleName=dl_config.get("DWH", "DWH_IAM_ROLE_NAME"),
         PolicyArn="arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess",
     )
-    iam_client.delete_role(RoleName=dwh_config.get("DWH", "DWH_IAM_ROLE_NAME"))
+    iam_client.delete_role(RoleName=dl_config.get("DWH", "DWH_IAM_ROLE_NAME"))
 
 
 def create_s3_bucket(user_config: ConfigParser, dl_config: ConfigParser) -> bool:
@@ -164,7 +164,7 @@ def create_s3_bucket(user_config: ConfigParser, dl_config: ConfigParser) -> bool
     )
 
     # 2. Create bucket if it doesn't exist
-    bucket_name = dl_config.get("S3", "DEST_BUCKET_NAME")
+    bucket_name = dl_config.get("S3", "BUCKET_NAME")
 
     try:
         s3.meta.client.head_bucket(Bucket=bucket_name)
