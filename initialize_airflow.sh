@@ -3,7 +3,7 @@
 # airflow needs a home, ~/airflow is the default,
 # but you can lay foundation somewhere else if you prefer
 # (optional)
-AIRFLOW_HOME=$(pwd)/_airflow
+AIRFLOW_HOME=$(pwd)/.airflow
 export AIRFLOW_HOME
 
 AIRFLOW__CORE__DAGS_FOLDER=$(pwd)/src/dags
@@ -27,11 +27,10 @@ airflow db init
 
 airflow users create \
 --username admin \
---firstname Jon \
---lastname Snow \
+--firstname Carlos \
+--lastname Perez \
 --role Admin \
---email john@snow.org
-
+--email carlos@perez.org
 
 # start the web server, default port is 8080
 airflow webserver --daemon --port 8080
@@ -46,8 +45,8 @@ airflow scheduler --daemon
 # Wait till airflow web-server is ready
 echo "Waiting for Airflow web server..."
 while true; do
-    _RUNNING=$(ps aux | grep airflow-webserver | grep ready | wc -l)
-    if [ $_RUNNING -eq 0 ]; then
+    _RUNNING=$(pgrep airflow-webserver | grep -c)
+    if [ "$_RUNNING" -eq 0 ]; then
         sleep 1
     else
         echo "Airflow web server is ready"
