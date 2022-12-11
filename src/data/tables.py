@@ -1,4 +1,5 @@
-from typing import Dict
+from pathlib import Path
+from typing import Any, Dict, Iterable, Union
 
 import pyspark.sql.types as T
 
@@ -39,7 +40,7 @@ I94_ON_LOAD_SCHEMA = T.StructType(
 
 # U.S. City Demographic Data
 USDEMO_ON_LOAD_FIELDS: Dict[str, T.DataType] = {
-    "City": (T.StringType(), False),
+    "City": (T.StringType(), True),
     "State": (T.StringType(), True),
     "Median Age": (T.FloatType(), True),
     "Male Population": (T.FloatType(), True),
@@ -58,7 +59,7 @@ USDEMO_ON_LOAD_SCHEMA = T.StructType(
 
 # Airport Code Table
 AIRCODES_ON_LOAD_FIELDS: Dict[str, T.DataType] = {
-    "ident": (T.StringType(), False),
+    "ident": (T.StringType(), True),
     "type": (T.StringType(), True),
     "name": (T.StringType(), True),
     "elevation_ft": (T.FloatType(), True),
@@ -77,7 +78,7 @@ AIRCODES_ON_LOAD_SCHEMA = T.StructType(
 
 # World Temperature Data
 TEMP_ON_LOAD_FIELDS: Dict[str, T.DataType] = {
-    "dt": (T.StringType(), False),
+    "dt": (T.StringType(), True),
     "AverageTemperature": (T.FloatType(), True),
     "AverageTemperatureUncertainty": (T.FloatType(), True),
     "City": (T.StringType(), True),
@@ -95,4 +96,83 @@ ON_LOAD_TABLES_SCHEMA: Dict[str, T.StructType] = {
     "us_demographics": USDEMO_ON_LOAD_SCHEMA,
     "airport_codes": AIRCODES_ON_LOAD_SCHEMA,
     "world_temperature": TEMP_ON_LOAD_SCHEMA,
+}
+
+# Tables files location
+DATA_PATH: Path = Path(__file__).parents[2].joinpath("data")
+ON_LOAD_TABLES_FILES: Dict[str, Union[str, Iterable[str]]] = {
+    "i94_immigration": sorted(
+        [
+            str(p)
+            for p in DATA_PATH.joinpath("i94_immigration_data_2016").glob(
+                "*_2016.csv.bz2"
+            )
+        ]
+    ),
+    "us_demographics": str(DATA_PATH.joinpath("us_cities_demographics.csv.bz2")),
+    "airport_codes": str(DATA_PATH.joinpath("airport_codes.csv.bz2")),
+    "world_temperature": str(
+        DATA_PATH.joinpath("global_land_temperature_by_city.csv.bz2")
+    ),
+}
+
+# Dictionary of tables cleaning args
+ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[Any]] = {
+    "i94_immigration": {
+        "data_paths": ON_LOAD_TABLES_FILES["i94_immigration"],
+        "data_schema": ON_LOAD_TABLES_SCHEMA["i94_immigration"],
+        "table_name": "i94_immigration",
+        "drop_na_cols": [
+            "cicid",
+            "i94yr",
+            "i94mon",
+            "i94cit",
+            "i94res",
+            "arrdate",
+            "i94mode",
+            "i94visa",
+            "i94bir",
+            "gender",
+        ],
+        "drop_duplicates_cols": ["cicid"],
+        "parquet_partition_cols": ["i94mon", "i94cit"],
+    },
+    "us_demographics": {
+        "data_paths": ON_LOAD_TABLES_FILES["us_demographics"],
+        "data_schema": ON_LOAD_TABLES_SCHEMA["us_demographics"],
+        "table_name": "us_demographics",
+        "drop_na_cols": [
+            "City",
+            "State",
+        ],
+        "drop_duplicates_cols": ["State Code"],
+        "parquet_partition_cols": ["State", "City"],
+    },
+    "airport_codes": {
+        "data_paths": ON_LOAD_TABLES_FILES["airport_codes"],
+        "data_schema": ON_LOAD_TABLES_SCHEMA["airport_codes"],
+        "table_name": "airport_codes",
+        "drop_na_cols": [
+            "ident",
+            "name",
+            "iso_country",
+            "iso_region",
+            "municipality"
+        ],
+        "drop_duplicates_cols": ["ident"],
+        "parquet_partition_cols": ["iso_country", "iso_region"],
+    },
+    "world_temperature": {
+        "data_paths": ON_LOAD_TABLES_FILES["world_temperature"],
+        "data_schema": ON_LOAD_TABLES_SCHEMA["world_temperature"],
+        "table_name": "world_temperature",
+        "drop_na_cols": [
+            "dt",
+            "AverageTemperature",
+            "City",
+            "Country",
+        ],
+        "drop_duplicates_cols": None,
+        "parquet_partition_cols": ["Country", "City"],
+    },
 }
