@@ -9,7 +9,4 @@ class CapstonePlugin(AirflowPlugin):
     name = "capstone_plugin"
     operators = [
         operators.DataCleaningOperator,
-        operators.DataQualityOperator,
-        operators.LoadDimensionOperator,
-        operators.LoadFactOperator,
     ]
