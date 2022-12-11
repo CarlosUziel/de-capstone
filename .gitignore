@@ -146,4 +146,4 @@ dmypy.json
 _user.cfg
 
 # Airflow server
-_airflow
+.airflow
