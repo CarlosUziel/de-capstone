@@ -102,18 +102,11 @@ ON_LOAD_TABLES_SCHEMA: Dict[str, T.StructType] = {
 DATA_PATH: Path = Path(__file__).parents[2].joinpath("data")
 ON_LOAD_TABLES_FILES: Dict[str, Union[str, Iterable[str]]] = {
     "i94_immigration": sorted(
-        [
-            str(p)
-            for p in DATA_PATH.joinpath("i94_immigration_data_2016").glob(
-                "*_2016.csv.bz2"
-            )
-        ]
+        list(DATA_PATH.joinpath("i94_immigration_data_2016").glob("*_2016.csv.bz2"))
     ),
-    "us_demographics": str(DATA_PATH.joinpath("us_cities_demographics.csv.bz2")),
-    "airport_codes": str(DATA_PATH.joinpath("airport_codes.csv.bz2")),
-    "world_temperature": str(
-        DATA_PATH.joinpath("global_land_temperature_by_city.csv.bz2")
-    ),
+    "us_demographics": DATA_PATH.joinpath("us_cities_demographics.csv.bz2"),
+    "airport_codes": DATA_PATH.joinpath("airport_codes.csv.bz2"),
+    "world_temperature": DATA_PATH.joinpath("global_land_temperature_by_city.csv.bz2"),
 }
 
 # Dictionary of tables cleaning args
@@ -135,7 +128,7 @@ ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[str, Any]] = {
             "gender",
         ],
         "drop_duplicates_cols": ["cicid"],
-        "parquet_partition_cols": ["i94mon", "i94cit"],
+        "parquet_partition_cols": ("i94mon", "i94cit"),
     },
     "us_demographics": {
         "data_paths": ON_LOAD_TABLES_FILES["us_demographics"],
@@ -146,7 +139,7 @@ ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[str, Any]] = {
             "State",
         ],
         "drop_duplicates_cols": ["State Code"],
-        "parquet_partition_cols": ["State", "City"],
+        "parquet_partition_cols": ("State", "City"),
     },
     "airport_codes": {
         "data_paths": ON_LOAD_TABLES_FILES["airport_codes"],
@@ -154,7 +147,7 @@ ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[str, Any]] = {
         "table_name": "airport_codes",
         "drop_na_cols": ["ident", "name", "iso_country", "iso_region", "municipality"],
         "drop_duplicates_cols": ["ident"],
-        "parquet_partition_cols": ["iso_country", "iso_region"],
+        "parquet_partition_cols": ("iso_country", "iso_region"),
     },
     "world_temperature": {
         "data_paths": ON_LOAD_TABLES_FILES["world_temperature"],
@@ -167,6 +160,6 @@ ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[str, Any]] = {
             "Country",
         ],
         "drop_duplicates_cols": None,
-        "parquet_partition_cols": ["Country", "City"],
+        "parquet_partition_cols": ("Country", "City"),
     },
 }
