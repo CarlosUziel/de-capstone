@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Iterable, Optional, Union
 
@@ -47,7 +48,7 @@ class DataCleaningOperator(BaseOperator):
         table_df = self.spark.read.csv(
             (
                 str(self.data_paths)
-                if type(self.data_paths) == Path
+                if not isinstance(self.data_paths, Iterable)
                 else [str(p) for p in self.data_paths]
             ),
             schema=self.data_schema,
@@ -69,6 +70,10 @@ class DataCleaningOperator(BaseOperator):
             table_df = table_df.dropDuplicates(subset=self.drop_duplicates_cols)
 
         # 6. Store clean data in S3 as parquet files.
+        logging.info(
+            f"{self.table_name} has {table_df.count()} records after the cleaning"
+            " procedure."
+        )
         save_path = f"s3a://{self.s3_bucket_prefix}/{self.table_name}"
         if (
             self.parquet_partition_cols is not None
