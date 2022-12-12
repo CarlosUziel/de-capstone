@@ -1,5 +1,5 @@
 from configparser import ConfigParser
-
+import multiprocessing
 import pyspark
 from pyspark.sql import SparkSession
 
@@ -18,6 +18,8 @@ def create_spark_session(user_config: ConfigParser, dl_config: ConfigParser):
         .config(
             "spark.jars.packages", f"org.apache.hadoop:hadoop-aws:{pyspark.__version__}"
         )
+        .config("spark.worker.cores", multiprocessing.cpu_count() - 2)
+        .config("spark.driver.memory", "12g")
         .getOrCreate()
     )
 
