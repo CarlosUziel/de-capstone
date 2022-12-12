@@ -45,7 +45,7 @@ airflow scheduler --daemon
 # Wait till airflow web-server is ready
 echo "Waiting for Airflow web server..."
 while true; do
-    _RUNNING=$(pgrep airflow-webserver | grep -c)
+    _RUNNING=$(ps aux | grep airflow-webserver | grep -c ready)
     if [ "$_RUNNING" -eq 0 ]; then
         sleep 1
     else
