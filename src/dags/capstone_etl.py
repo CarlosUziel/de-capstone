@@ -6,6 +6,7 @@ from airflow.operators.empty import EmptyOperator
 
 from data.tables import ON_LOAD_TABLES_CLEANING_ARGS
 from plugins.operators.data_cleaning import DataCleaningOperator
+from plugins.operators.data_quality import DataQualityOperator
 from utils.io import process_config
 from utils.spark import create_spark_session
 
@@ -20,7 +21,7 @@ s3_bucket_prefix = dl_config.get("S3", "BUCKET_NAME") + "/clean"
 default_args = {
     "owner": "DE Capstone",
     "depends_on_past": False,
-    "start_date": datetime(2022, 12, 1),
+    "start_date": datetime(2022, 12, 12),
     # "retries": 1,
     # "retry_delay": timedelta(hours=1),
     "catchup": False,
@@ -30,7 +31,7 @@ dag = DAG(
     "capstone_etl",
     default_args=default_args,
     description="Load and transform data in S3 data lake with Airflow",
-    # schedule_interval="@hourly",
+    schedule_interval="@once",
 )
 
 # 0. Start
@@ -42,6 +43,7 @@ clean_tables_tasks = {
         task_id=f"clean_{table_name}",
         dag=dag,
         spark=spark,
+        table_name=table_name,
         s3_bucket_prefix=s3_bucket_prefix,
         **table_kwargs,
     )
@@ -49,3 +51,24 @@ clean_tables_tasks = {
 }
 for task in clean_tables_tasks.values():
     start_operator.set_downstream(task)
+
+# 2. Check completeness in cleaned tables
+clean_tables_quality_check_tasks = {
+    table_name: DataQualityOperator(
+        task_id=f"check_{table_name}",
+        dag=dag,
+        table_parquet=f"s3a://{s3_bucket_prefix}/{table_name}",
+        spark=spark,
+        table_name=table_name,
+        checks=[
+            {
+                "sql": f"SELECT COUNT(*) FROM {table_name}",
+                "reference_value": 0,
+                "func": (lambda x, y: x > y),
+            }
+        ],
+    )
+    for table_name in ON_LOAD_TABLES_CLEANING_ARGS.keys()
+}
+for table_name, clean_task in clean_tables_tasks.items():
+    clean_task.set_downstream(clean_tables_quality_check_tasks[table_name])
