@@ -14,8 +14,13 @@ class DataCleaningOperator(BaseOperator):
 
     Args:
         spark: Spark session.
-        data_paths: One or more Paths pointing to the data files.
-
+        table_paths: One or more Paths pointing to the data files.
+        table_schema: Schema of the table to load and clean.
+        table_name: Name of the table to load and clean.
+        s3_bucket_prefix: Prefix of the S3 bucket where cleaned tables will be stored.
+        drop_na_cols: Optional, subset columns to drop NaNs.
+        drop_duplicates_cols: Optional, subset columns to drop duplicates.
+        parquet_partition_cols: Columns to partition parquet files by.
     """
 
     ui_color = "#89DA59"
@@ -23,8 +28,8 @@ class DataCleaningOperator(BaseOperator):
     def __init__(
         self,
         spark: SparkSession,
-        data_paths: Union[Path, Iterable[Path]],
-        data_schema: T.StructType,
+        table_paths: Union[Path, Iterable[Path]],
+        table_schema: T.StructType,
         table_name: str,
         s3_bucket_prefix: str,
         drop_na_cols: Optional[Iterable[str]] = None,
@@ -35,8 +40,8 @@ class DataCleaningOperator(BaseOperator):
     ):
         super(DataCleaningOperator, self).__init__(*args, **kwargs)
         self.spark = spark
-        self.data_paths = data_paths
-        self.data_schema = data_schema
+        self.table_paths = table_paths
+        self.table_schema = table_schema
         self.table_name = table_name
         self.s3_bucket_prefix = s3_bucket_prefix
         self.drop_na_cols = drop_na_cols
@@ -47,11 +52,11 @@ class DataCleaningOperator(BaseOperator):
         # 1. Load data with schema
         table_df = self.spark.read.csv(
             (
-                str(self.data_paths)
-                if not isinstance(self.data_paths, Iterable)
-                else [str(p) for p in self.data_paths]
+                str(self.table_paths)
+                if not isinstance(self.table_paths, Iterable)
+                else [str(p) for p in self.table_paths]
             ),
-            schema=self.data_schema,
+            schema=self.table_schema,
             header=True,
         )
 
