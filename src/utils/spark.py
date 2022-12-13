@@ -1,5 +1,6 @@
-from configparser import ConfigParser
 import multiprocessing
+from configparser import ConfigParser
+
 import pyspark
 from pyspark.sql import SparkSession
 
