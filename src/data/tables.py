@@ -112,9 +112,8 @@ ON_LOAD_TABLES_FILES: Dict[str, Union[str, Iterable[str]]] = {
 # Dictionary of tables cleaning args
 ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[str, Any]] = {
     "i94_immigration": {
-        "data_paths": ON_LOAD_TABLES_FILES["i94_immigration"],
-        "data_schema": ON_LOAD_TABLES_SCHEMA["i94_immigration"],
-        "table_name": "i94_immigration",
+        "table_paths": ON_LOAD_TABLES_FILES["i94_immigration"],
+        "table_schema": ON_LOAD_TABLES_SCHEMA["i94_immigration"],
         "drop_na_cols": [
             "cicid",
             "i94yr",
@@ -131,9 +130,8 @@ ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[str, Any]] = {
         "parquet_partition_cols": ("i94mon", "i94cit"),
     },
     "us_demographics": {
-        "data_paths": ON_LOAD_TABLES_FILES["us_demographics"],
-        "data_schema": ON_LOAD_TABLES_SCHEMA["us_demographics"],
-        "table_name": "us_demographics",
+        "table_paths": ON_LOAD_TABLES_FILES["us_demographics"],
+        "table_schema": ON_LOAD_TABLES_SCHEMA["us_demographics"],
         "drop_na_cols": [
             "City",
             "State",
@@ -142,17 +140,15 @@ ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[str, Any]] = {
         "parquet_partition_cols": ("State", "City"),
     },
     "airport_codes": {
-        "data_paths": ON_LOAD_TABLES_FILES["airport_codes"],
-        "data_schema": ON_LOAD_TABLES_SCHEMA["airport_codes"],
-        "table_name": "airport_codes",
+        "table_paths": ON_LOAD_TABLES_FILES["airport_codes"],
+        "table_schema": ON_LOAD_TABLES_SCHEMA["airport_codes"],
         "drop_na_cols": ["ident", "name", "iso_country", "iso_region", "municipality"],
         "drop_duplicates_cols": ["ident"],
         "parquet_partition_cols": ("iso_country", "iso_region"),
     },
     "world_temperature": {
-        "data_paths": ON_LOAD_TABLES_FILES["world_temperature"],
-        "data_schema": ON_LOAD_TABLES_SCHEMA["world_temperature"],
-        "table_name": "world_temperature",
+        "table_paths": ON_LOAD_TABLES_FILES["world_temperature"],
+        "table_schema": ON_LOAD_TABLES_SCHEMA["world_temperature"],
         "drop_na_cols": [
             "dt",
             "AverageTemperature",
