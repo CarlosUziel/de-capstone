@@ -86,6 +86,8 @@ class DataCleaningOperator(BaseOperator):
         ):
             table_df.repartition(
                 *[F.col(c) for c in self.parquet_partition_cols]
-            ).write.parquet(save_path, mode="overwrite")
+            ).write.parquet(
+                save_path, partitionBy=self.parquet_partition_cols, mode="overwrite"
+            )
         else:
             table_df.write.parquet(save_path, mode="overwrite")
