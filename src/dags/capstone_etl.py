@@ -35,7 +35,7 @@ dag = DAG(
 )
 
 # 0. Start
-start_operator = EmptyOperator(task_id="begin_execution", dag=dag)
+start_op = EmptyOperator(task_id="begin_execution", dag=dag)
 
 # 1. Cleaning tables
 clean_tables_tasks = {
@@ -50,7 +50,7 @@ clean_tables_tasks = {
     for table_name, table_kwargs in ON_LOAD_TABLES_CLEANING_ARGS.items()
 }
 for task in clean_tables_tasks.values():
-    start_operator.set_downstream(task)
+    start_op.set_downstream(task)
 
 # 2. Check completeness in cleaned tables
 clean_tables_quality_check_tasks = {
@@ -72,3 +72,8 @@ clean_tables_quality_check_tasks = {
 }
 for table_name, clean_task in clean_tables_tasks.items():
     clean_task.set_downstream(clean_tables_quality_check_tasks[table_name])
+
+# 3. Intermediate step - Clean ready
+clean_ready_op = EmptyOperator(task_id="clean_ready", dag=dag)
+for task in clean_tables_quality_check_tasks.values():
+    task.set_downstream(clean_ready_op)
