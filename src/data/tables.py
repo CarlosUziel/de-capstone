@@ -127,24 +127,21 @@ ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[str, Any]] = {
             "gender",
         ],
         "drop_duplicates_cols": ["cicid"],
-        "parquet_partition_cols": ("i94mon", "i94cit"),
+        "parquet_partition_cols": ("i94mon",),
     },
     "us_demographics": {
         "table_paths": ON_LOAD_TABLES_FILES["us_demographics"],
         "table_schema": ON_LOAD_TABLES_SCHEMA["us_demographics"],
-        "drop_na_cols": [
-            "City",
-            "State",
-        ],
-        "drop_duplicates_cols": ["State Code"],
-        "parquet_partition_cols": ("State", "City"),
+        "drop_na_cols": ["City", "State", "State Code", "Race"],
+        "drop_duplicates_cols": ["City", "State", "State Code", "Race"],
+        "parquet_partition_cols": ("State",),
     },
     "airport_codes": {
         "table_paths": ON_LOAD_TABLES_FILES["airport_codes"],
         "table_schema": ON_LOAD_TABLES_SCHEMA["airport_codes"],
         "drop_na_cols": ["ident", "name", "iso_country", "iso_region", "municipality"],
         "drop_duplicates_cols": ["ident"],
-        "parquet_partition_cols": ("iso_country", "iso_region"),
+        "parquet_partition_cols": ("iso_country",),
     },
     "world_temperature": {
         "table_paths": ON_LOAD_TABLES_FILES["world_temperature"],
@@ -156,6 +153,6 @@ ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[str, Any]] = {
             "Country",
         ],
         "drop_duplicates_cols": None,
-        "parquet_partition_cols": ("Country", "City"),
+        "parquet_partition_cols": ("Country",),
     },
 }
