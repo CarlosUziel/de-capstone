@@ -1,7 +1,10 @@
+import datetime
+import json
 import logging
 from itertools import chain
 from pathlib import Path
 
+import numpy as np
 import pyspark.sql.functions as F
 from dateutil.relativedelta import relativedelta
 from pyspark.sql import SparkSession
@@ -9,8 +12,8 @@ from pyspark.sql import SparkSession
 
 def extract_dim_cities(
     spark: SparkSession,
-    us_demographics_path: Path,
-    airport_codes_path: Path,
+    us_demographics_path: str,
+    airport_codes_path: str,
     s3_save_path: str,
 ):
     """
@@ -24,7 +27,7 @@ def extract_dim_cities(
             table.
         s3_save_path: S3 bucket prefix to store `dim_cities` in.
     """
-    # 1. Load staging tables necessary to extract `dim_cities`
+    # 1. Load staging tables
     us_demographics_df = spark.read.parquet(us_demographics_path)
     airport_codes_df = spark.read.parquet(airport_codes_path)
 
@@ -88,13 +91,11 @@ def extract_dim_cities(
         s3_save_path, partitionBy=partition_cols, mode="overwrite"
     )
 
-    return dim_cities
-
 
 def extract_dim_airports(
     spark: SparkSession,
-    airport_codes_path: Path,
-    dim_cities_path: Path,
+    airport_codes_path: str,
+    dim_cities_path: str,
     s3_save_path: str,
 ):
     """
@@ -106,7 +107,7 @@ def extract_dim_airports(
         dim_cities_path: Path pointint to parquet files of `dim_cities` table.
         s3_save_path: S3 bucket prefix to store `dim_airports` in.
     """
-    # 1. Load staging tables necessary to extract `dim_cities`
+    # 1. Load staging tables
     airport_codes_df = spark.read.parquet(airport_codes_path)
     dim_cities_df = spark.read.parquet(dim_cities_path)
 
@@ -139,13 +140,11 @@ def extract_dim_airports(
         s3_save_path, partitionBy=partition_cols, mode="overwrite"
     )
 
-    return dim_airports
-
 
 def extract_fact_temps(
     spark: SparkSession,
-    world_temperature_path: Path,
-    dim_cities_path: Path,
+    world_temperature_path: str,
+    dim_cities_path: str,
     s3_save_path: str,
 ):
     """
@@ -158,7 +157,7 @@ def extract_fact_temps(
         dim_cities_path: Path pointint to parquet files of `dim_cities` table.
         s3_save_path: S3 bucket prefix to store `fact_temps` in.
     """
-    # 1. Load staging tables necessary to extract `dim_cities`
+    # 1. Load staging tables
     world_temperature_df = spark.read.parquet(world_temperature_path)
     dim_cities_df = spark.read.parquet(dim_cities_path)
 
@@ -206,13 +205,11 @@ def extract_fact_temps(
     logging.info(f"fact_temps has {fact_temps.count()} records")
     fact_temps.write.parquet(s3_save_path, mode="overwrite")
 
-    return fact_temps
-
 
 def extract_fact_us_demogr(
     spark: SparkSession,
-    us_demographics_path: Path,
-    dim_cities_path: Path,
+    us_demographics_path: str,
+    dim_cities_path: str,
     s3_save_path: str,
 ):
     """
@@ -225,7 +222,7 @@ def extract_fact_us_demogr(
         dim_cities_path: Path pointint to parquet files of `dim_cities` table.
         s3_save_path: S3 bucket prefix to store `fact_temps` in.
     """
-    # 1. Load staging tables necessary to extract `dim_cities`
+    # 1. Load staging tables
     us_demographics_df = spark.read.parquet(us_demographics_path)
     dim_cities_df = spark.read.parquet(dim_cities_path)
 
@@ -261,4 +258,105 @@ def extract_fact_us_demogr(
     logging.info(f"fact_us_demogr has {fact_us_demogr.count()} records")
     fact_us_demogr.write.parquet(s3_save_path, mode="overwrite")
 
-    return fact_us_demogr
+
+def extract_fact_immigration(
+    spark: SparkSession,
+    i94_immigration_path: str,
+    dim_cities_path: str,
+    data_dictionary_json: str,
+    s3_save_path: str,
+):
+    """
+    Extract dimensional table `fact_immigration` from `i94_immigration` and `dim_cities`.
+
+    Args:
+        spark: SparkSession object.
+        i94_immigration_path: Path pointint to parquet files of staging i94 immigration.
+        dim_cities_path: Path pointint to parquet files of `dim_cities` table.
+        s3_save_path: S3 bucket prefix to store `fact_temps` in.
+    """
+    # 1. Load staging tables
+    i94_immigration_df = spark.read.parquet(i94_immigration_path)
+    dim_cities_df = spark.read.parquet(dim_cities_path)
+
+    with Path(data_dictionary_json).open("r") as fp:
+        data_dictionary = json.load(fp)
+
+    # 2. Convert column types (NaNs must have already been removed)
+    cols_int = [
+        "cicid",
+        "i94yr",
+        "i94mon",
+        "i94cit",
+        "i94res",
+        "arrdate",
+        "i94mode",
+        "i94visa",
+        "i94bir",
+    ]
+    other_cols = [c for c in i94_immigration_df.columns if c not in cols_int]
+    i94_immigration_df = i94_immigration_df.select(
+        *[F.col(c) for c in other_cols],
+        *[F.col(c).cast("int").alias(c) for c in cols_int],
+    )
+
+    # 3. Map integer codes of `i94cit` and `i94res` columns
+    cit_res_map = F.create_map(
+        [F.lit(x) for x in chain(*data_dictionary["i94cit"]["enum_map"].items())]
+    )
+    i94_immigration_df = i94_immigration_df.withColumn(
+        "i94cit", cit_res_map[i94_immigration_df["i94cit"]]
+    )
+    i94_immigration_df = i94_immigration_df.withColumn(
+        "i94res", cit_res_map[i94_immigration_df["i94res"]]
+    )
+
+    # 4. Extract airport city and state code from `i94_port`
+    # 4.1. Map integer codes
+    port_map = F.create_map(
+        [F.lit(x) for x in chain(*data_dictionary["i94port"]["enum_map"].items())]
+    )
+    i94_immigration_df = i94_immigration_df.withColumn(
+        "i94port", port_map[i94_immigration_df["i94port"]]
+    )
+
+    # 4.2. Get `city` field
+    get_city = F.udf(lambda x: x.split(", ")[0].title())
+    i94_immigration_df = i94_immigration_df.withColumn(
+        "city", get_city(i94_immigration_df["i94port"])
+    )
+
+    # 4.3. Get `state_code` field
+    get_state_code = F.udf(lambda x: x.split(", ")[1] if len(x.split(", ")) > 1 else x)
+    i94_immigration_df = i94_immigration_df.withColumn(
+        "state_code", get_state_code(i94_immigration_df["i94port"])
+    )
+
+    # 5. Transform date fields (`arrdate`, `depdate`)
+    transform_sas_date = F.udf(
+        lambda x: (
+            datetime.datetime(1960, 1, 1) + datetime.timedelta(days=x)
+            if x is not np.nan
+            else np.nan
+        )
+    )
+    i94_immigration_df = i94_immigration_df.withColumn(
+        "arrdate", transform_sas_date(i94_immigration_df["arrdate"])
+    )
+    i94_immigration_df = i94_immigration_df.withColumn(
+        "depdate", transform_sas_date(i94_immigration_df["depdate"])
+    )
+
+    # 6. Join with `dim_cities` to get `city_id` field
+    facts_immigration = i94_immigration_df.join(
+        dim_cities_df.select(["city_id", "city", "state_code"]),
+        (i94_immigration_df["city"] == dim_cities_df["city"])
+        & (i94_immigration_df["state_code"] == dim_cities_df["state_code"]),
+    ).drop("city", "state_code")
+
+    # 7. Save `facts_immigration` to S3 bucket
+    logging.info(f"facts_immigration has {facts_immigration.count()} records")
+    partition_cols = ["i94mon"]
+    facts_immigration.repartition(*[F.col(c) for c in partition_cols]).write.parquet(
+        s3_save_path, partitionBy=partition_cols, mode="overwrite"
+    )
