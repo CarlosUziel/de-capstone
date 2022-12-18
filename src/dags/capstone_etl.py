@@ -85,7 +85,7 @@ extract_dim_cities_task = PythonOperator(
     task_id=f"extract_dim_cities",
     dag=dag,
     python_callable=STAR_EXTRACT_TABLES_ARGS["dim_cities"]["python_callable"],
-    op_kwargs=STAR_EXTRACT_TABLES_ARGS["dim_cities"]["op_kwargs"],
+    op_kwargs={"spark": spark, **STAR_EXTRACT_TABLES_ARGS["dim_cities"]["op_kwargs"]},
 )
 extract_dim_cities_task.set_upstream(clean_ready_op)
 
@@ -111,7 +111,7 @@ extract_tables_tasks = {
         task_id=f"extract_{table_name}",
         dag=dag,
         python_callable=table_kwargs["python_callable"],
-        op_kwargs=table_kwargs["op_kwargs"],
+        op_kwargs={"spark": spark, **table_kwargs["op_kwargs"]},
     )
     for table_name, table_kwargs in STAR_EXTRACT_TABLES_ARGS.items()
     if table_name is not "dim_cities"
