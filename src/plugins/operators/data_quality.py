@@ -22,7 +22,7 @@ class DataQualityOperator(BaseOperator):
                 value as arguments and returns whether the condition is satisfied.
     """
 
-    ui_color = "#89DA59"
+    ui_color = "#4A708B"
 
     def __init__(
         self,

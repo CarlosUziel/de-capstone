@@ -23,7 +23,7 @@ class DataCleaningOperator(BaseOperator):
         parquet_partition_cols: Columns to partition parquet files by.
     """
 
-    ui_color = "#89DA59"
+    ui_color = "#9ACD32"
 
     def __init__(
         self,
