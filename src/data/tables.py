@@ -3,6 +3,15 @@ from typing import Any, Dict, Iterable, Union
 
 import pyspark.sql.types as T
 
+from etl import (
+    extract_dim_airports,
+    extract_dim_cities,
+    extract_fact_immigration,
+    extract_fact_temps,
+    extract_fact_us_demogr,
+)
+from utils.io import process_config
+
 # I94 Immigration Data
 I94_ON_LOAD_FIELDS: Dict[str, T.DataType] = {
     "cicid": (T.FloatType(), True),
@@ -154,5 +163,59 @@ ON_LOAD_TABLES_CLEANING_ARGS: Dict[str, Dict[str, Any]] = {
         ],
         "drop_duplicates_cols": None,
         "parquet_partition_cols": ("Country",),
+    },
+}
+
+# Dictionary of tables cleaning args
+dl_config = process_config(Path(__file__).parents[2].joinpath("dl.cfg"))
+S3_BUCKET_PREFIX = dl_config.get("S3", "BUCKET_NAME")
+STAR_EXTRACT_TABLES_ARGS: Dict[str, Dict[str, Any]] = {
+    "dim_cities": {
+        "python_callable": extract_dim_cities,
+        "op_kwargs": {
+            "us_demographics_path": f"s3a://{S3_BUCKET_PREFIX}/clean/us_demographics",
+            "airport_codes_path": f"s3a://{S3_BUCKET_PREFIX}/clean/airport_codes",
+            "s3_save_path": f"s3a://{S3_BUCKET_PREFIX}/star/dim_cities",
+        },
+    },
+    "dim_airports": {
+        "python_callable": extract_dim_airports,
+        "op_kwargs": {
+            "airport_codes_path": f"s3a://{S3_BUCKET_PREFIX}/clean/airport_codes",
+            "dim_cities_path": f"s3a://{S3_BUCKET_PREFIX}/star/dim_cities",
+            "s3_save_path": f"s3a://{S3_BUCKET_PREFIX}/star/dim_airports",
+        },
+    },
+    "fact_temps": {
+        "python_callable": extract_fact_temps,
+        "op_kwargs": {
+            "world_temperature_path": (
+                f"s3a://{S3_BUCKET_PREFIX}/clean/world_temperature"
+            ),
+            "dim_cities_path": f"s3a://{S3_BUCKET_PREFIX}/star/dim_cities",
+            "s3_save_path": f"s3a://{S3_BUCKET_PREFIX}/star/fact_temps",
+        },
+    },
+    "fact_us_demogr": {
+        "python_callable": extract_fact_us_demogr,
+        "op_kwargs": {
+            "us_demographics_path": f"s3a://{S3_BUCKET_PREFIX}/clean/us_demographics",
+            "dim_cities_path": f"s3a://{S3_BUCKET_PREFIX}/star/dim_cities",
+            "s3_save_path": f"s3a://{S3_BUCKET_PREFIX}/star/fact_us_demogr",
+        },
+    },
+    "fact_immigration": {
+        "python_callable": extract_fact_immigration,
+        "op_kwargs": {
+            "i94_immigration_path": f"s3a://{S3_BUCKET_PREFIX}/clean/i94_immigration",
+            "dim_cities_path": f"s3a://{S3_BUCKET_PREFIX}/star/dim_cities",
+            "data_dictionary_json": str(
+                Path(__file__)
+                .resolve()
+                .parents[2]
+                .joinpath("data/i94_immigration_data_2016/schema.json")
+            ),
+            "s3_save_path": f"s3a://{S3_BUCKET_PREFIX}/star/fact_immigration",
+        },
     },
 }
