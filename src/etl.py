@@ -1,10 +1,9 @@
-import datetime
 import json
 import logging
+from datetime import datetime, timedelta
 from itertools import chain
 from pathlib import Path
 
-import numpy as np
 import pyspark.sql.functions as F
 from dateutil.relativedelta import relativedelta
 from pyspark.sql import SparkSession
@@ -122,16 +121,12 @@ def extract_dim_airports(
     )
 
     # 3. Join with `dim_cities` to get `city_id` field
-    dim_airports = (
-        airport_codes_df.join(
-            dim_cities_df.select(["city_id", "city", "state_code", "country_code"]),
-            (airport_codes_df["city"] == dim_cities_df["city"])
-            & (airport_codes_df["state_code"] == dim_cities_df["state_code"])
-            & (airport_codes_df["country_code"] == dim_cities_df["country_code"]),
-        )
-        .dropDuplicates(subset=["city", "state_code", "country_code"])
-        .drop("city", "state_code", "country_code")
-    )
+    dim_airports = airport_codes_df.join(
+        dim_cities_df.select(["city_id", "city", "state_code", "country_code"]),
+        (airport_codes_df["city"] == dim_cities_df["city"])
+        & (airport_codes_df["state_code"] == dim_cities_df["state_code"])
+        & (airport_codes_df["country_code"] == dim_cities_df["country_code"]),
+    ).drop("city", "state_code", "country_code")
 
     # 4. Save `dim_airports` to S3 bucket
     logging.info(f"dim_airports has {dim_airports.count()} records")
@@ -334,11 +329,7 @@ def extract_fact_immigration(
 
     # 5. Transform date fields (`arrdate`, `depdate`)
     transform_sas_date = F.udf(
-        lambda x: (
-            datetime.datetime(1960, 1, 1) + datetime.timedelta(days=x)
-            if x is not np.nan
-            else np.nan
-        )
+        lambda x: (datetime(1960, 1, 1) + timedelta(days=x) if x is not None else x)
     )
     i94_immigration_df = i94_immigration_df.withColumn(
         "arrdate", transform_sas_date(i94_immigration_df["arrdate"])
