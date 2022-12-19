@@ -52,7 +52,9 @@ The goal of this project is to extract insights from U.S. immigration data. More
 
 In order to achieve this goal, I will be using Amazon Web Services (AWS) S3 buckets, Apache Airflow and Apache Spark to populate a Data Lake residing on S3. Given the reasonable size of the data (available in this repository through [Git LFS](https://git-lfs.github.com/)), the ETL pipeline represented as an Airflow DAG will be run locally, as well as the subsequent analytic queries.
 
-Raw data will be cleaned and uploaded to S3. Then, the STAR dimensional tables will be extracted and stored on S3 to form the Data Lake. Finally, these tables will be queried for different analytic purposes. This pipeline is meant to be run on-demand and not in a schedule, since the datasets are static and do not come from any streaming or updating source. All data operations are performed with Spark for best performance.
+Raw data will be cleaned and uploaded to S3. Then, the STAR dimensional tables will be extracted and stored on S3 to form the Data Lake. Finally, these tables will be queried for different analytic purposes. This pipeline is meant to be run on-demand and not in a schedule, since the datasets are static and do not come from any streaming or updating source. All data operations are performed with Spark for best performance. The following image represents the final DAG:
+
+![Capstone DAG](images/capstone_dag.png)
 
 It is however worth considering whether this action plan would also be appropriate in different scenarios:
 
