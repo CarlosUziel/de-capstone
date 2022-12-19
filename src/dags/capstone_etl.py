@@ -6,6 +6,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 
 from data.tables import ON_LOAD_TABLES_CLEANING_ARGS, STAR_EXTRACT_TABLES_ARGS
+from plugins.operators.data_cleaning import DataCleaningOperator
 from plugins.operators.data_quality import DataQualityOperator
 from utils.io import process_config
 from utils.spark import create_spark_session
