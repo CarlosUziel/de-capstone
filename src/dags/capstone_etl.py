@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from airflow import DAG
@@ -6,7 +6,6 @@ from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 
 from data.tables import ON_LOAD_TABLES_CLEANING_ARGS, STAR_EXTRACT_TABLES_ARGS
-from plugins.operators.data_cleaning import DataCleaningOperator
 from plugins.operators.data_quality import DataQualityOperator
 from utils.io import process_config
 from utils.spark import create_spark_session
@@ -23,8 +22,8 @@ default_args = {
     "owner": "DE Capstone",
     "depends_on_past": False,
     "start_date": datetime(2022, 12, 1),
-    # "retries": 1,
-    # "retry_delay": timedelta(hours=1),
+    "retries": 3,
+    "retry_delay": timedelta(minutes=5),
     "catchup": False,
 }
 
@@ -74,7 +73,7 @@ clean_tables_quality_check_tasks = {
 for table_name, clean_task in clean_tables_tasks.items():
     clean_task.set_downstream(clean_tables_quality_check_tasks[table_name])
 
-# 3. Intermediate step - Clean ready
+# # 3. Intermediate step - Clean ready
 clean_ready_op = EmptyOperator(task_id="clean_ready", dag=dag)
 for task in clean_tables_quality_check_tasks.values():
     task.set_downstream(clean_ready_op)
