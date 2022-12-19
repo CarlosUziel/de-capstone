@@ -132,7 +132,6 @@ dmypy.json
 *.PDF
 *.csv
 *.CSV
-*.txt
 *.TXT
 *.idea
 *.bin
