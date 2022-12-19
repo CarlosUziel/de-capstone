@@ -113,7 +113,19 @@ def extract_dim_airports(
     # 2. Rename and modfiy columns to join with `dim_cities`
     get_state_code = F.udf(lambda x: x.split("-")[1])
     airport_codes_df = (
-        airport_codes_df.filter(airport_codes_df["iso_country"] == "US")
+        airport_codes_df.select(
+            [
+                "ident",
+                "type",
+                "name",
+                "elevation_ft",
+                "iso_country",
+                "iso_region",
+                "municipality",
+                "coordinates",
+            ]
+        )
+        .filter(airport_codes_df["iso_country"] == "US")
         .withColumn("iso_region", get_state_code(airport_codes_df["iso_region"]))
         .withColumnRenamed("municipality", "city")
         .withColumnRenamed("iso_country", "country_code")
@@ -327,7 +339,21 @@ def extract_fact_immigration(
         "state_code", get_state_code(i94_immigration_df["i94port"])
     )
 
-    # 5. Transform date fields (`arrdate`, `depdate`)
+    # 5. Drop unnecessary columns
+    i94_immigration_df = i94_immigration_df.drop(
+        "i94port",
+        "count",
+        "matflag",
+        "dtadfile",
+        "visapost",
+        "occup",
+        "entdepa",
+        "entdepd",
+        "entdepu",
+        "dtaddto",
+    )
+
+    # 6. Transform date fields (`arrdate`, `depdate`)
     transform_sas_date = F.udf(
         lambda x: (datetime(1960, 1, 1) + timedelta(days=x) if x is not None else x)
     )
@@ -338,14 +364,14 @@ def extract_fact_immigration(
         "depdate", transform_sas_date(i94_immigration_df["depdate"])
     )
 
-    # 6. Join with `dim_cities` to get `city_id` field
+    # 7. Join with `dim_cities` to get `city_id` field
     facts_immigration = i94_immigration_df.join(
         dim_cities_df.select(["city_id", "city", "state_code"]),
         (i94_immigration_df["city"] == dim_cities_df["city"])
         & (i94_immigration_df["state_code"] == dim_cities_df["state_code"]),
     ).drop("city", "state_code")
 
-    # 7. Save `facts_immigration` to S3 bucket
+    # 8. Save `facts_immigration` to S3 bucket
     logging.info(f"facts_immigration has {facts_immigration.count()} records")
     partition_cols = ["i94mon"]
     facts_immigration.repartition(*[F.col(c) for c in partition_cols]).write.parquet(
