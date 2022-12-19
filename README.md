@@ -153,7 +153,7 @@ Fill the `dl.cfg` configuration file. This is needed in order to create the S3 b
 
 ## Usage
 
-Simply follow along the main notebook of this project: `notebooks/main.ipynb`.
+Simply follow along the main notebook of this project: `notebooks/main.ipynb`. After running the whole project, the objects in S3 should be the same as in `data/s3_inventory.txt`.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
