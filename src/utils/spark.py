@@ -21,6 +21,7 @@ def create_spark_session(user_config: ConfigParser, dl_config: ConfigParser):
         )
         .config("spark.worker.cores", multiprocessing.cpu_count() - 2)
         .config("spark.driver.memory", "12g")
+        .config("spark.driver.maxResultSize", "2g")
         .getOrCreate()
     )
 
