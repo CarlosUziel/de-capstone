@@ -9,7 +9,9 @@
       <ul>
         <li><a href="#premise">Premise</a></li>
         <li><a href="#goal">Goal</a></li>
+        <li><a href="#execution-plan">Execution Plan</a></li>
         <li><a href="#data">Data</a></li>
+        <li><a href="#data-schema">Data Schema</a></li>
       </ul>
     </li>
     <li>
@@ -17,7 +19,7 @@
       <ul>
         <li><a href="#setting-up-a-conda-environment">Setting up a conda environment</a></li>
         <li><a href="#setting-up-a-local-apache-airflow-server">Setting up a local Apache Airflow server</a></li>
-        <li><a href="#setting-up-an-amazon-redshift-cluster">Setting up an Amazon Redshift cluster</a></li>
+        <li><a href="#getting-ready-to-interact-with-aws">Getting ready to interact with AWS</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -42,11 +44,24 @@ Immigration affects the receiving country in many fronts, from the labor market 
 
 ### Goal
 
-The goal of this project is to extract insights from U.S. immigration data. Additional information can be drawn by correlating immigration data with U.S. cities demographics, airports and even average temperature.
+The goal of this project is to extract insights from U.S. immigration data. Moreover, additional information can be obtained by correlating immigration data with U.S. cities demographics, available airports in the receiving cities and even average temperature through the year.
 
-In order to achieve this goal, I will be using AWS services such as S3 buckets and Amazon Redshift. The ETL pipeline will be executed through an Apache Airflow DAG.
+<p align="right">(<a href="#top">back to top</a>)</p>
 
-Raw data will first be uploaded to S3 buckets. Then, an Apache Airflow DAG will clean and process the data before creating and populating the relevant fact and dimension tables, following a predefined STAR schema. Finally, these end tables will be queried to obtain the desired insights.
+### Execution plan
+
+In order to achieve this goal, I will be using Amazon Web Services (AWS) S3 buckets, Apache Airflow and Apache Spark to populate a Data Lake residing on S3. Given the reasonable size of the data (available in this repository through [Git LFS](https://git-lfs.github.com/)), the ETL pipeline represented as an Airflow DAG will be run locally, as well as the subsequent analytic queries.
+
+Raw data will be cleaned and uploaded to S3. Then, the STAR dimensional tables will be extracted and stored on S3 to form the Data Lake. Finally, these tables will be queried for different analytic purposes. This pipeline is meant to be run on-demand and not in a schedule, since the datasets are static and do not come from any streaming or updating source. All data operations are performed with Spark for best performance.
+
+It is however worth considering whether this action plan would also be appropriate in different scenarios:
+
+  1. **The data is 100x larger**:
+      - The size of the data would make it infeasible to process on a standard consumer PC or laptop or even a medium-size compute server. Therefore it would make sense to use cloud computing services such as AWS EC2 machines or AWS EMR clusters for all data-heavy operations. Also, all data (i.e. from raw to cleaned data) would be stored in S3 or alternatively on HDFS partitions for quicker access from Spark.
+  2. **The data populates a dashboard that must be updated on a daily basis by 7am every day**:
+      - If the dashboard must be updated daily, that means the data is also increasing in size daily. Therefore, similar to the previous point, more computing resources would be needed to handle this additional requirement. The Airflow DAG would then need to be scheduled such that it would be done by 7am every day. This could be achieved by scheduling the pipeline to start a few hours earlier (depending on estimated total compute time) as well as by setting an [Service Level Agreement (SLA)](https://airflow.apache.org/docs/apache-airflow/1.10.10/concepts.html?highlight=slas#slas).
+  3. **The database needed to be accessed by 100+ people**:
+      - With the data stored in S3 buckets, this should not be an issue, as long as each user has the necessary permissions to access said S3 buckets. Amazon S3 buckets are designed to support [high frequency operations](https://aws.amazon.com/about-aws/whats-new/2018/07/amazon-s3-announces-increased-request-rate-performance/).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -63,7 +78,7 @@ The project uses the following data sets:
 
 ### Data Schema
 
-To be defined...
+The Data Lake follows a STAR schema, where tables can be joined by a `city_id` field that uniquely identifies a city in a US state. A total of five tables were extracted: `dim_cities`, `dim_airports`, `fact_temps`, `fact_us_demogr` and `fact_immigration`. A brief description of each table, their source datasets as well as the available columns can be found in `data/star_schema.json`.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -103,7 +118,7 @@ bash initialize_airflow.sh
 
 Introduce your desired password when prompted and then access the UI at `localhost:8080` with user `admin` and the password you just created.
 
-### Setting up an Amazon Redshift cluster
+### Getting ready to interact with AWS
 
 **Create an IAM user:**
 
@@ -111,7 +126,7 @@ Introduce your desired password when prompted and then access the UI at `localho
   2. Go to [AWS IAM service](https://console.aws.amazon.com/iam/home#/users) and click on the "**Add user**" button to create a new IAM user in your AWS account.
   3. Choose a name of your choice.
   4. Select "**Programmatic access**" as the access type. Click Next.
-  5. Choose the **Attach existing policies directly tab**, and select the "**AdministratorAccess**". Click Next.
+  5. Choose the **Attach existing policies directly tab**, and select the "**AdministratorAccess**". This is solely for the purposes of this project and not recommended in a production environment. Click Next.
   6. Skip adding any tags. Click Next.
   7. Review and create the user. It will show you a pair of access key ID and secret.
   8. Take note of the pair of access key ID and secret. This pair is collectively known as Access key.
@@ -128,18 +143,17 @@ Introduce your desired password when prompted and then access the UI at `localho
   2. This file will be loaded internally to connect to AWS and perform various operations.
   3. **DO NOT SHARE THIS FILE WITH ANYONE!** I recommend adding this file to .gitignore to avoid accidentally pushing it to a git repository: `printf "\n_user.cfg\n" >> .gitignore`.
 
-**Create cluster:**
+**Set configuration values:**
 
-  1. Fill the `dl.cfg` configuration file. These are the basic parameters that will be used to operate on AWS. More concretely, `GENERAL` covers general parameters, `DWH` includes the necessary information to create and connect to the Redshift cluster and S3 contains information on where to find the source dataset for this project. *This file is already filled with example values*.
-  2. To create the Redshift cluster, simply run the `setup.py` python script (must be done after `initialize_airflow.sh`, since registration of connections is also taking place in `setup.py`).
+Fill the `dl.cfg` configuration file. This is needed in order to create the S3 bucket that will hold all the data, as well as the region where this bucket should reside in.
 
-<span style="color:red;font-weight:bold">*DO NOT FORGET TO TERMINATE YOUR REDSHIFT CLUSTER WHEN FINISHED WORKING ON THE PROJECT TO AVOID UNWANTED COSTS!*</span>
+<span style="color:red;font-weight:bold">*DO NOT FORGET TO DELETE YOUR S3 BUCKETS WHEN FINISHED WORKING ON THE PROJECT TO AVOID UNWANTED COSTS!*</span>
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Usage
 
-...
+Simply follow along the main notebook of this project: `notebooks/main.ipynb`.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
