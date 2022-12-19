@@ -1,0 +1,22 @@
+name: de_capstone
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - pandas
+  - boto3
+  - isort
+  - black-jupyter
+  - autoflake
+  - jupyterlab
+  - ca-certificates
+  - certifi
+  - openssl
+  - python=3.10
+  - airflow
+  - pyspark
+  - psycopg2
+  - pandas-profiling
+  - ipywidgets
+prefix: /home/uziel/miniconda3/envs/de_capstone
