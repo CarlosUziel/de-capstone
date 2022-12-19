@@ -1,0 +1,89 @@
+{
+  "dim_cities": {
+    "description": "US cities information",
+    "source_datasets": "U.S. City Demographic Data & Airport Code Table",
+    "columns": [
+      "city_id",
+      "city",
+      "state",
+      "country",
+      "country_code",
+      "state_code"
+    ]
+  },
+  "dim_airports": {
+    "description": "US airports information with City IDs",
+    "source_datasets": "Airport Code Table and `dim_cities`",
+    "columns": [
+      "ident",
+      "name",
+      "elevation_ft",
+      "continent",
+      "gps_code",
+      "iata_code",
+      "local_code",
+      "coordinates",
+      "city_id",
+      "type"
+    ]
+  },
+  "fact_temps": {
+    "description": "Temperature information for multiple US cities with City IDs",
+    "source_datasets": "World Temperature Data and `dim_cities`",
+    "columns": ["avg_temperature", "avg_temperature_uncertainty", "city_id"]
+  },
+  "fact_us_demogr": {
+    "description": "US cities demographic information with City IDs",
+    "source_datasets": "U.S. City Demographic Data and `dim_cities`",
+    "columns": [
+      "median_age",
+      "male_population",
+      "female_population",
+      "total_population",
+      "number_of_veterans",
+      "foreign_born",
+      "average_household_size",
+      "american_indian_and_alaska_native",
+      "asian",
+      "black_or_african_american",
+      "hispanic_or_latino",
+      "white",
+      "city_id"
+    ]
+  },
+  "fact_immigration": {
+    "description": "Immigration data from the US in the year 2016 with City IDs",
+    "source_datasets": "I94 Immigration Data and `dim_cities`",
+    "columns": [
+      "i94port",
+      "i94addr",
+      "depdate",
+      "count",
+      "dtadfile",
+      "visapost",
+      "occup",
+      "entdepa",
+      "entdepd",
+      "entdepu",
+      "matflag",
+      "biryear",
+      "dtaddto",
+      "gender",
+      "insnum",
+      "airline",
+      "admnum",
+      "fltno",
+      "visatype",
+      "cicid",
+      "i94yr",
+      "i94cit",
+      "i94res",
+      "arrdate",
+      "i94mode",
+      "i94visa",
+      "i94bir",
+      "city_id",
+      "i94mon"
+    ]
+  }
+}
