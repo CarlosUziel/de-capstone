@@ -110,6 +110,8 @@ mamba env create -f environment.yml # alternatively use environment_core.yml if 
 mamba activate de_capstone
 ```
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 ### Setting up a local Apache Airflow server
 
 To start a local Apache Airflow server for the purposes of this project, simply run the following:
@@ -119,6 +121,8 @@ bash initialize_airflow.sh
 ```
 
 Introduce your desired password when prompted and then access the UI at `localhost:8080` with user `admin` and the password you just created.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Getting ready to interact with AWS
 
