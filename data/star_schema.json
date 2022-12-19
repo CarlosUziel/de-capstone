@@ -2,88 +2,162 @@
   "dim_cities": {
     "description": "US cities information",
     "source_datasets": "U.S. City Demographic Data & Airport Code Table",
-    "columns": [
-      "city_id",
-      "city",
-      "state",
-      "country",
-      "country_code",
-      "state_code"
-    ]
+    "columns": {
+      "city_id": { "description": "Numeric city ID", "dtype": "integer" },
+      "city": { "description": "Name of the city", "dtype": "string" },
+      "state": { "description": "Name of the state", "dtype": "string" },
+      "state_code": { "description": "2-letter state code", "dtype": "string" },
+      "country": { "description": "Name of the country", "dtype": "string" },
+      "country_code": {
+        "description": "2-letter country code",
+        "dtype": "string"
+      }
+    }
   },
   "dim_airports": {
     "description": "US airports information with City IDs",
     "source_datasets": "Airport Code Table and `dim_cities`",
-    "columns": [
-      "ident",
-      "name",
-      "elevation_ft",
-      "continent",
-      "gps_code",
-      "iata_code",
-      "local_code",
-      "coordinates",
-      "city_id",
-      "type"
-    ]
+    "columns": {
+      "ident": { "description": "4-digit airport ID", "dtype": "string" },
+      "name": { "description": "Airport name", "dtype": "string" },
+      "elevation_ft": {
+        "description": "Airport elevation in feet",
+        "dtype": "float"
+      },
+      "coordinates": {
+        "description": "Airport coordinates (longitude, latitude)",
+        "dtype": "string"
+      },
+      "city_id": {
+        "description": "Numeric city ID where airport is located. This is a FK to the dim_cities dimension table.",
+        "dtype": "integer"
+      },
+      "type": { "description": "Airport type", "dtype": "string" }
+    }
   },
   "fact_temps": {
     "description": "Temperature information for multiple US cities with City IDs",
     "source_datasets": "World Temperature Data and `dim_cities`",
-    "columns": ["avg_temperature", "avg_temperature_uncertainty", "city_id"]
+    "columns": {
+      "avg_temperature": {
+        "description": "Average temperature of the last 25 available years",
+        "dtype": "float"
+      },
+      "avg_temperature_uncertainty": {
+        "description": "Average temperature uncertainty of the last 25 available years",
+        "dtype": "float"
+      },
+      "city_id": {
+        "description": "Numeric city ID where temperature was measured. This is a FK to the dim_cities dimension table.",
+        "dtype": "integer"
+      }
+    }
   },
   "fact_us_demogr": {
     "description": "US cities demographic information with City IDs",
     "source_datasets": "U.S. City Demographic Data and `dim_cities`",
-    "columns": [
-      "median_age",
-      "male_population",
-      "female_population",
-      "total_population",
-      "number_of_veterans",
-      "foreign_born",
-      "average_household_size",
-      "american_indian_and_alaska_native",
-      "asian",
-      "black_or_african_american",
-      "hispanic_or_latino",
-      "white",
-      "city_id"
-    ]
+    "columns": {
+      "median_age": {
+        "description": "Population median age",
+        "dtype": "float"
+      },
+      "male_population": {
+        "description": "Number of male citizens",
+        "dtype": "integer"
+      },
+      "female_population": {
+        "description": "Number of female citizens",
+        "dtype": "integer"
+      },
+      "total_population": {
+        "description": "Total number of citizens",
+        "dtype": "integer"
+      },
+      "number_of_veterans": {
+        "description": "Number of veteran citizens",
+        "dtype": "integer"
+      },
+      "foreign_born": {
+        "description": "Number of citizens born abroad",
+        "dtype": "string"
+      },
+      "average_household_size": {
+        "description": "Average household size",
+        "dtype": "float"
+      },
+      "american_indian_and_alaska_native": {
+        "description": "Number american-indian or alaska-native citizens",
+        "dtype": "integer"
+      },
+      "asian": {
+        "description": "Number of asian citizens",
+        "dtype": "integer"
+      },
+      "black_or_african_american": {
+        "description": "Number of black/african-american citizens",
+        "dtype": "integer"
+      },
+      "hispanic_or_latino": {
+        "description": "Number hispanic/latino citizens",
+        "dtype": "integer"
+      },
+      "white": {
+        "description": "Number of white citizens",
+        "dtype": "integer"
+      },
+      "city_id": {
+        "description": "Numeric city ID where population lives. This is a FK to the dim_cities dimension table.",
+        "dtype": "integer"
+      }
+    }
   },
   "fact_immigration": {
     "description": "Immigration data from the US in the year 2016 with City IDs",
     "source_datasets": "I94 Immigration Data and `dim_cities`",
-    "columns": [
-      "i94port",
-      "i94addr",
-      "depdate",
-      "count",
-      "dtadfile",
-      "visapost",
-      "occup",
-      "entdepa",
-      "entdepd",
-      "entdepu",
-      "matflag",
-      "biryear",
-      "dtaddto",
-      "gender",
-      "insnum",
-      "airline",
-      "admnum",
-      "fltno",
-      "visatype",
-      "cicid",
-      "i94yr",
-      "i94cit",
-      "i94res",
-      "arrdate",
-      "i94mode",
-      "i94visa",
-      "i94bir",
-      "city_id",
-      "i94mon"
-    ]
+    "columns": {
+      "i94yr": { "description": "4 digit year", "dtype": "integer" },
+      "i94mon": { "description": "Numeric month", "dtype": "integer" },
+      "i94addr": { "description": "Current address", "dtype": "string" },
+      "depdate": {
+        "description": "The departure date from the USA",
+        "dtype": "datetime"
+      },
+      "biryear": { "description": "4 digit year of birth", "dtype": "integer" },
+      "gender": { "description": "Non-inmigrant sex", "dtype": "string" },
+      "insnum": { "description": "Insurance number", "dtype": "integer" },
+      "airline": {
+        "description": "Airline used to arrive in the U.S.",
+        "dtype": "string"
+      },
+      "admnum": { "description": "Admission number.", "dtype": "integer" },
+      "fltno": {
+        "description": "Flight number of Airline used to arrive in U.S.",
+        "dtype": "string"
+      },
+      "visatype": {
+        "description": "Class of admission legally admitting the non-immigrant to temporarily stay in U.S.",
+        "dtype": "string"
+      },
+      "cicid": {
+        "description": "Unique immigrant identifier",
+        "dtype": "integer"
+      },
+      "i94cit": { "description": "Citizenship", "dtype": "string" },
+      "i94res": { "description": "Residency", "dtype": "string" },
+      "arrdate": {
+        "description": "Arrival date in the USA",
+        "dtype": "datetime"
+      },
+      "i94mode": { "description": "Mode of transport", "dtype": "integer" },
+      "i94visa": { "description": "Visa codes", "dtype": "integer" },
+      "i94bir": {
+        "description": "Age of respondent in years",
+        "dtype": "integer"
+      },
+      "city_id": {
+        "description": "Numeric city ID where immigrants arrived. This is a FK to the dim_cities dimension table.",
+        "dtype": "integer"
+      }
+    }
   }
 }
