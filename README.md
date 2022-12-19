@@ -80,6 +80,8 @@ The project uses the following data sets:
 
 The Data Lake follows a STAR schema, where tables can be joined by a `city_id` field that uniquely identifies a city in a US state. A total of five tables were extracted: `dim_cities`, `dim_airports`, `fact_temps`, `fact_us_demogr` and `fact_immigration`. A brief description of each table, their source datasets as well as the available columns can be found in `data/star_schema.json`.
 
+After running the whole project, the objects in S3 should be the same as in `data/s3_inventory.txt`. Data profiling reports for all tables except `facts_immigration` are available in `data/profiling_reports`.
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Getting Started
@@ -153,7 +155,7 @@ Fill the `dl.cfg` configuration file. This is needed in order to create the S3 b
 
 ## Usage
 
-Simply follow along the main notebook of this project: `notebooks/main.ipynb`. After running the whole project, the objects in S3 should be the same as in `data/s3_inventory.txt`.
+Simply follow along the main notebook of this project: `notebooks/main.ipynb`.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
