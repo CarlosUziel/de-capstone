@@ -3,7 +3,7 @@
     "description": "US cities information",
     "source_datasets": "U.S. City Demographic Data & Airport Code Table",
     "columns": {
-      "city_id": { "description": "Numeric city ID", "dtype": "integer" },
+      "city_id": { "description": "Numeric city ID. PK.", "dtype": "integer" },
       "city": { "description": "Name of the city", "dtype": "string" },
       "state": { "description": "Name of the state", "dtype": "string" },
       "state_code": { "description": "2-letter state code", "dtype": "string" },
@@ -18,7 +18,7 @@
     "description": "US airports information with City IDs",
     "source_datasets": "Airport Code Table and `dim_cities`",
     "columns": {
-      "ident": { "description": "4-digit airport ID", "dtype": "string" },
+      "ident": { "description": "4-digit airport ID. PK.", "dtype": "string" },
       "name": { "description": "Airport name", "dtype": "string" },
       "elevation_ft": {
         "description": "Airport elevation in feet",
@@ -48,7 +48,7 @@
         "dtype": "float"
       },
       "city_id": {
-        "description": "Numeric city ID where temperature was measured. This is a FK to the dim_cities dimension table.",
+        "description": "Numeric city ID where temperature was measured. PK. This is a FK to the dim_cities dimension table.",
         "dtype": "integer"
       }
     }
@@ -106,7 +106,7 @@
         "dtype": "integer"
       },
       "city_id": {
-        "description": "Numeric city ID where population lives. This is a FK to the dim_cities dimension table.",
+        "description": "Numeric city ID where population lives. PK. This is a FK to the dim_cities dimension table.",
         "dtype": "integer"
       }
     }
@@ -115,6 +115,10 @@
     "description": "Immigration data from the US in the year 2016 with City IDs",
     "source_datasets": "I94 Immigration Data and `dim_cities`",
     "columns": {
+      "cicid": {
+        "description": "Unique immigrant identifier. PK.",
+        "dtype": "integer"
+      },
       "i94yr": { "description": "4 digit year", "dtype": "integer" },
       "i94mon": { "description": "Numeric month", "dtype": "integer" },
       "i94addr": { "description": "Current address", "dtype": "string" },
@@ -137,10 +141,6 @@
       "visatype": {
         "description": "Class of admission legally admitting the non-immigrant to temporarily stay in U.S.",
         "dtype": "string"
-      },
-      "cicid": {
-        "description": "Unique immigrant identifier",
-        "dtype": "integer"
       },
       "i94cit": { "description": "Citizenship", "dtype": "string" },
       "i94res": { "description": "Residency", "dtype": "string" },
