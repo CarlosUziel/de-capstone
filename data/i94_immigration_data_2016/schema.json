@@ -1,16 +1,16 @@
 {
   "i94yr": {
-    "Description": "4 digit year",
+    "description": "4 digit year",
     "dtype": "int",
     "enum_map": null
   },
   "i94mon": {
-    "Description": "Numeric month",
+    "description": "Numeric month",
     "dtype": "int",
     "enum_map": null
   },
   "i94cit": {
-    "Description": "Citizenship",
+    "description": "Citizenship",
     "dtype": "int",
     "enum_map": {
       "582": "MEXICO Air Sea, and Not Reported (I-94, no land arrivals)",
@@ -305,7 +305,7 @@
     }
   },
   "i94res": {
-    "Description": "Residency",
+    "description": "Residency",
     "dtype": "int",
     "enum_map": {
       "582": "MEXICO Air Sea, and Not Reported (I-94, no land arrivals)",
@@ -600,7 +600,7 @@
     }
   },
   "i94port": {
-    "Description": "Airport code",
+    "description": "Airport code",
     "dtype": "str",
     "enum_map": {
       "ALC": "ALCAN, AK",
@@ -1266,17 +1266,17 @@
     }
   },
   "arrdate": {
-    "Description": "Arrival date in the USA (SAS date numeric field)",
+    "description": "Arrival date in the USA (SAS date numeric field)",
     "dtype": "int",
     "enum_map": null
   },
   "i94mode": {
-    "Description": "Mode of transport",
+    "description": "Mode of transport",
     "dtype": "int",
     "enum_map": { "1": "Air", "2": "Sea", "3": "Land", "9": "Not reported" }
   },
   "i94addr": {
-    "Description": "Current address",
+    "description": "Current address",
     "dtype": "str",
     "enum_map": {
       "AL": "ALABAMA",
@@ -1337,62 +1337,62 @@
     }
   },
   "depdate": {
-    "Description": "The departure date from the USA (SAS date numeric field)",
+    "description": "The departure date from the USA (SAS date numeric field)",
     "dtype": "int",
     "enum_map": null
   },
   "i94bir": {
-    "Description": "Age of respondent in years",
+    "description": "Age of respondent in years",
     "dtype": "int",
     "enum_map": null
   },
   "i94visa": {
-    "Description": "Visa codes",
+    "description": "Visa codes",
     "dtype": "int",
     "enum_map": { "1": "Business", "2": "Pleasure", "3": "Student" }
   },
   "count": {
-    "Description": "Used for summary statistics",
+    "description": "Used for summary statistics",
     "dtype": "int",
     "enum_map": null
   },
   "matflag": {
-    "Description": "Match of arrival and departure records",
+    "description": "Match of arrival and departure records",
     "dtype": "str",
     "enum_map": null
   },
   "biryear": {
-    "Description": "4 digit year of birth",
+    "description": "4 digit year of birth",
     "dtype": "int",
     "enum_map": null
   },
   "gender": {
-    "Description": "Non-inmigrant sex",
+    "description": "Non-inmigrant sex",
     "dtype": "str",
     "enum_map": null
   },
   "insnum": {
-    "Description": "Insurance number",
+    "description": "Insurance number",
     "dtype": "int",
     "enum_map": null
   },
   "airline": {
-    "Description": "Airline used to arrive in the U.S.",
+    "description": "Airline used to arrive in the U.S.",
     "dtype": "str",
     "enum_map": null
   },
   "admnum": {
-    "Description": "Admission number.",
+    "description": "Admission number.",
     "dtype": "int",
     "enum_map": null
   },
   "fltno": {
-    "Description": "Flight number of Airline used to arrive in U.S.",
+    "description": "Flight number of Airline used to arrive in U.S.",
     "dtype": "str",
     "enum_map": null
   },
   "visatype": {
-    "Description": "Class of admission legally admitting the non-immigrant to temporarily stay in U.S.",
+    "description": "Class of admission legally admitting the non-immigrant to temporarily stay in U.S.",
     "dtype": "str",
     "enum_map": null
   }
