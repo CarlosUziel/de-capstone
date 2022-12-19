@@ -84,6 +84,10 @@ The Data Lake follows a STAR schema, where tables can be joined by a `city_id` f
 
 After running the whole project, the objects in S3 should be the same as in `data/s3_inventory.txt`. Data profiling reports for all tables except `facts_immigration` are available in `data/profiling_reports`.
 
+The following diagram shows how the resulting dimensional tables relate to each other:
+
+![Database Diagram](images/db_diagram.png)
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Getting Started
